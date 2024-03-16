@@ -1,0 +1,80 @@
+// code for Write a code for any given grammar that satisfy the criterion of JAVA language constructs.
+
+import java.util.Scanner;
+
+public class ArithmeticParser {
+    private static int currentPosition = 0;
+    private static String input;
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter an arithmetic expression: ");
+        input = scanner.nextLine();
+        try {
+            currentPosition = 0; // Reset currentPosition before parsing a new expression
+            int result = parseExpression();
+            System.out.println("Result: " + result);
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+        scanner.close();
+    }
+
+    private static int parseExpression() {
+        int result = parseTerm();
+        while (currentPosition < input.length() && (input.charAt(currentPosition) == '+' || input.charAt(currentPosition) == '-')) {
+            char operator = input.charAt(currentPosition);
+            currentPosition++;
+            int nextTerm = parseTerm();
+            if (operator == '+') {
+                result += nextTerm;
+            } else {
+                result -= nextTerm;
+            }
+        }
+        return result;
+    }
+
+    private static int parseTerm() {
+        int result = parseFactor();
+        while (currentPosition < input.length() && (input.charAt(currentPosition) == '*' || input.charAt(currentPosition) == '/')) {
+            char operator = input.charAt(currentPosition);
+            currentPosition++;
+            int nextFactor = parseFactor();
+            if (operator == '*') {
+                result *= nextFactor;
+            } else {
+                if (nextFactor == 0) {
+                    throw new ArithmeticException("Division by zero");
+                }
+                result /= nextFactor;
+            }
+        }
+        return result;
+    }
+
+    private static int parseFactor() {
+        if (Character.isDigit(input.charAt(currentPosition))) {
+            return parseNumber();
+        } else if (input.charAt(currentPosition) == '(') {
+            currentPosition++;
+            int result = parseExpression();
+            if (currentPosition >= input.length() || input.charAt(currentPosition) != ')') {
+                throw new IllegalArgumentException("Missing closing parenthesis");
+            }
+            currentPosition++;
+            return result;
+        } else {
+            throw new IllegalArgumentException("Invalid character: " + input.charAt(currentPosition));
+        }
+    }
+
+    private static int parseNumber() {
+        StringBuilder sb = new StringBuilder();
+        while (currentPosition < input.length() && Character.isDigit(input.charAt(currentPosition))) {
+            sb.append(input.charAt(currentPosition));
+            currentPosition++;
+        }
+        return Integer.parseInt(sb.toString());
+    }
+}
